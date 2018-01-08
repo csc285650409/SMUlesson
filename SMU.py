@@ -13,26 +13,28 @@ login_headers={
 session=requests.session()
 r=session.get(first_url,headers=login_headers)
 
-username=input('输入学号\n')
-password=input('输入密码\n')
-#获取表单隐藏数据
-soup=BeautifulSoup(r.content,'lxml')
-lt=soup.find(attrs={'name':'lt'})['value']
-execution=soup.find(attrs={'name':'execution'})['value']
-login_data={
-    'username':username,
-    'password':password,
-    'lt':lt,
-    'execution':execution,
-    '_eventId':'submit',
-    'signin':'登录',
-}
+while True:
+    username=input('输入学号\n')
+    password=input('输入密码\n')
+    #获取表单隐藏数据
+    soup=BeautifulSoup(r.content,'lxml')
+    lt=soup.find(attrs={'name':'lt'})['value']
+    execution=soup.find(attrs={'name':'execution'})['value']
+    login_data={
+        'username':username,
+        'password':password,
+        'lt':lt,
+        'execution':execution,
+        '_eventId':'submit',
+        'signin':'登录',
+    }
 
-# 登录并重定向
-r=session.post(first_url,data=login_data,headers=login_headers,allow_redirects=False)
-if(r.status_code!=302):
-    print('登录失败')
-    exit()
+    # 登录并重定向
+    r=session.post(first_url,data=login_data,headers=login_headers,allow_redirects=False)
+    if(r.status_code!=302):
+        print('登录失败')
+    else:
+        break
 login_headers['Host']='jwxt.shmtu.edu.cn'
 r=session.get(r.next.url,headers=login_headers)
 soup=BeautifulSoup(r.content,'lxml')
@@ -44,12 +46,24 @@ else:
     exit()
 
 # 获取选课elecSessionTime
-r=session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!defaultPage.action?electionProfile.id=779',headers=login_headers)
+# 779通选  781专业选修  782实践课程
+while True:
+    xuankeID=input("输入1通选课 输入2专业课程 输入3实习实践课程\n")
+    if(xuankeID=='1'):
+        xuankeID='779'
+        break
+    elif(xuankeID=='2'):
+        xuankeID='781'
+        break
+    elif (xuankeID== '3'):
+        xuankeID = '782'
+        break
+r=session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!defaultPage.action?electionProfile.id='+xuankeID,headers=login_headers)
 soup=BeautifulSoup(r.content,'lxml')
 elecSessionTime=soup.find('input',{'id':'elecSessionTime'})['value']
 
 # 课程信息
-r2=session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!data.action?profileId=779',headers=login_headers)
+r2=session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!data.action?profileId='+xuankeID,headers=login_headers)
 
 kexuhao=input('输入唯一课序号\n')
 # kexuhao='FX197005_001'
@@ -63,7 +77,7 @@ select_data={
 }
 
 # 进行刷课
-select_url='http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!batchOperator.action?profileId=779&elecSessionTime='
+select_url='http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!batchOperator.action?profileId='+xuankeID+'&elecSessionTime='
 select_url+=elecSessionTime
 while True:
     r=session.post(select_url,data=select_data,headers=login_headers)
