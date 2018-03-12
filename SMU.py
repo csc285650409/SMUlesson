@@ -46,20 +46,26 @@ class SMU:
             if(r.status_code!=302):
                 print('登录失败')
             else:
-                break
-        self.login_headers['Host']='jwxt.shmtu.edu.cn'
-        r=self.session.get(r.next.url,headers=self.login_headers)
-        soup=BeautifulSoup(r.content,'lxml')
+                self.login_headers['Host'] = 'jwxt.shmtu.edu.cn'
+                r = self.session.get(r.next.url, headers=self.login_headers)
+                soup = BeautifulSoup(r.content, 'lxml')
 
-        if(self.username in soup.find('a',attrs={'title':'查看登录记录'}).text):
-            print(soup.find('a',attrs={'title':'查看登录记录'}).text,' 登录成功')
+                try:
+                    if (self.username in soup.find('a', attrs={'title': '查看登录记录'}).text):
+                        print(soup.find('a', attrs={'title': '查看登录记录'}).text, ' 登录成功')
+                    break
+                except Exception as ex:
+                    print(ex)
+                    print('可能网络原因，再试一次')
+
+
 
     def SMUlesson(self,relogin=False):
         # 获取选课elecSessionTime
         # 779通选  781专业选修  782实践课程
         if(relogin==False):
             while True:
-                self.xuankeID=input("输入1通选课 输入2专业课程 输入3实习实践课程\n")
+                self.xuankeID=input("正选：输入1通选课 输入2专业课程 输入3实习实践课程\n补选：输入4补选专业课程 输入5单独重修班 输入6补选通选课\n")
                 if(self.xuankeID=='1'):
                     self.xuankeID='779'
                     break
@@ -69,9 +75,25 @@ class SMU:
                 elif (self.xuankeID== '3'):
                     self.xuankeID = '782'
                     break
-        r=self.session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!defaultPage.action?electionProfile.id='+self.xuankeID,headers=self.login_headers)
-        soup=BeautifulSoup(r.content,'lxml')
-        self.elecSessionTime=soup.find('input',{'id':'elecSessionTime'})['value']
+                elif (self.xuankeID == '4'):
+                    self.xuankeID = '787'
+                    break
+                elif (self.xuankeID == '5'):
+                    self.xuankeID = '793'
+                    break
+                elif (self.xuankeID == '6'):
+                    self.xuankeID = '790'
+                    break
+        while True:
+            try:
+                r=self.session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!defaultPage.action?electionProfile.id='+self.xuankeID,headers=self.login_headers)
+                soup=BeautifulSoup(r.content,'lxml')
+                self.elecSessionTime=soup.find('input',{'id':'elecSessionTime'})['value']
+                break;
+            except Exception as ex:
+                print(ex)
+                print('正在重试，或者请关闭重来')
+
 
         # 课程信息
         r2=self.session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!data.action?profileId='+self.xuankeID,headers=self.login_headers)
