@@ -67,13 +67,13 @@ class SMU:
             while True:
                 self.xuankeID=input("正选：输入1通选课 输入2专业课程 输入3实习实践课程\n补选：输入4补选专业课程 输入5单独重修班 输入6补选通选课\n")
                 if(self.xuankeID=='1'):
-                    self.xuankeID='779'
+                    self.xuankeID='975'
                     break
                 elif(self.xuankeID=='2'):
-                    self.xuankeID='781'
+                    self.xuankeID='973'
                     break
                 elif (self.xuankeID== '3'):
-                    self.xuankeID = '782'
+                    self.xuankeID = '974'
                     break
                 elif (self.xuankeID == '4'):
                     self.xuankeID = '787'
@@ -86,7 +86,7 @@ class SMU:
                     break
         while True:
             try:
-                r=self.session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!defaultPage.action?electionProfile.id='+self.xuankeID,headers=self.login_headers)
+                r=self.session.get('https://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!defaultPage.action?electionProfile.id='+self.xuankeID,headers=self.login_headers)
                 soup=BeautifulSoup(r.content,'lxml')
                 self.elecSessionTime=soup.find('input',{'id':'elecSessionTime'})['value']
                 break;
@@ -96,19 +96,19 @@ class SMU:
 
 
         # 课程信息
-        r2=self.session.get('http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!data.action?profileId='+self.xuankeID,headers=self.login_headers)
+        r2=self.session.get('https://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!data.action?profileId='+self.xuankeID,headers=self.login_headers)
         if (relogin == False):
             self.kexuhao=input('输入唯一课序号\n')
-        # kexuhao='FX197005_001'
+        # kexuhao='FX197004_001'
         index=r2.text.find(self.kexuhao)
         startindex=r2.text.rfind('id',0,index)+3
         endindex=r2.text.rfind(',no',0,index)
         lessonID=r2.text[startindex:endindex]
-        # lessonID='168726'#婚姻法
+        # lessonID='180699'#婚姻法
         self.select_data={
             'operator0':lessonID+':true:0',
         }
-        self.select_url = 'http://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!batchOperator.action?profileId=' + self.xuankeID + '&elecSessionTime='
+        self.select_url = 'https://jwxt.shmtu.edu.cn/shmtu/stdElectCourse!batchOperator.action?profileId=' + self.xuankeID + '&elecSessionTime='
         self.select_url += self.elecSessionTime
 
     def SMUrelogin(self):
